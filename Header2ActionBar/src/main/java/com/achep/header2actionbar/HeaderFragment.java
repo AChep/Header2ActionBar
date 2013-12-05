@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.Space;
@@ -63,18 +64,18 @@ public class HeaderFragment extends Fragment {
         mCurrentHeaderTranslateY = 0;
         onPrepareHeaderView(mHeader);
 
+        // Perform fake header view.
+        final Space fakeHeader = new Space(activity);
+        fakeHeader.setLayoutParams(new ListView.LayoutParams(
+                0, mHeaderHeight));
+
         View content = inflater.inflate(getContentResource(), container, false);
         assert content != null;
         if (content instanceof ListView) {
             final ListView listView = (ListView) content;
 
-            // Perform fake header view.
-            final Space listFakeHeader = new Space(activity);
-            listFakeHeader.setLayoutParams(new ListView.LayoutParams(
-                    0, mHeaderHeight));
-
             onPrepareContentListView(listView);
-            listView.addHeaderView(listFakeHeader);
+            listView.addHeaderView(fakeHeader);
             listView.setOnScrollListener(new AbsListView.OnScrollListener() {
 
                 @Override
@@ -83,7 +84,7 @@ public class HeaderFragment extends Fragment {
                 @Override
                 public void onScroll(AbsListView absListView, int i, int i2, int i3) {
                     final View child = absListView.getChildAt(0);
-                    if (child == listFakeHeader) {
+                    if (child == fakeHeader) {
                         updateHeaderScroll(child.getTop());
                     } else {
                         updateHeaderScroll(-mHeaderHeight);
@@ -93,8 +94,17 @@ public class HeaderFragment extends Fragment {
         } else {
             onPrepareContentView(content);
 
+            // Add fake header view
+            final LinearLayout ll = new LinearLayout(activity);
+            ll.setLayoutParams(new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+            ll.setOrientation(LinearLayout.VERTICAL);
+            ll.addView(fakeHeader);
+            ll.addView(content);
+
             final NotifyingScrollView scrollView = new NotifyingScrollView(activity);
-            scrollView.addView(content);
+            scrollView.addView(ll);
             scrollView.setOnScrollChangedListener(new NotifyingScrollView.OnScrollChangedListener() {
                 @Override
                 public void onScrollChanged(ScrollView who, int l, int t, int oldl, int oldt) {
@@ -103,6 +113,9 @@ public class HeaderFragment extends Fragment {
             });
             content = scrollView;
         }
+
+        // Initial notify
+        notifyOnHeaderScrollChangeListener(0, mHeaderHeight, 0);
 
         final FrameLayout root = new FrameLayout(activity);
         root.addView(content, new FrameLayout.LayoutParams(
@@ -113,7 +126,7 @@ public class HeaderFragment extends Fragment {
     }
 
     private void updateHeaderScroll(int scrollTo) {
-        scrollTo = scrollTo > 0 ? 0 : scrollTo < -mHeaderHeight ? mHeaderHeight : scrollTo;
+        scrollTo = scrollTo > 0 ? 0 : scrollTo < -mHeaderHeight ? -mHeaderHeight : scrollTo;
 
         final boolean allowChangeHeight = isHeaderHeightFloating();
         final int height = mHeaderHeight + scrollTo / 2;
@@ -129,12 +142,15 @@ public class HeaderFragment extends Fragment {
             mHeader.setTranslationY(transY);
             mCurrentHeaderTranslateY = transY;
 
-            if (mOnHeaderScrollChangeListener != null) {
-                // Notify upper fragment to update ActionBar's alpha or whatever.
-                int scroll = Math.abs(scrollTo);
-                mOnHeaderScrollChangeListener.onHeaderScrollChanged(
-                        (float) scroll / mHeaderHeight, mHeaderHeight, scroll);
-            }
+            notifyOnHeaderScrollChangeListener( (float) -scrollTo / mHeaderHeight,
+                    mHeaderHeight, -scrollTo);
+        }
+    }
+
+    private void notifyOnHeaderScrollChangeListener(float progress, int height, int scroll) {
+        if (mOnHeaderScrollChangeListener != null) {
+            // Notify upper fragment to update ActionBar's alpha or whatever.
+            mOnHeaderScrollChangeListener.onHeaderScrollChanged(progress, height, scroll);
         }
     }
 
