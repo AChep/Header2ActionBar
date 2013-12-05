@@ -174,7 +174,8 @@ public class HeaderFragment extends Fragment {
                 final int delta = mHeaderHeight + scrollTo;
                 lp.height = mRoot.getHeight() - delta;
                 mContentOverlay.setLayoutParams(lp);
-                mContentOverlay.setTranslationY(delta);
+                ObjectAnimator.ofInt(mContentOverlay, "translationY", delta);
+//                mContentOverlay.setTranslationY(delta);
             }
 
             notifyOnHeaderScrollChangeListener((float) -scrollTo / mHeaderHeight,
