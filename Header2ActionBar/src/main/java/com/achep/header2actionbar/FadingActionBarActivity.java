@@ -16,15 +16,15 @@
 
 package com.achep.header2actionbar;
 
-import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 
 /**
  * Created by AChep@xda <artemchep@gmail.com>
  */
-public class FadingActionBarActivity extends Activity {
+public class FadingActionBarActivity extends ActionBarActivity {
 
     private static final String TAG = "FadingActionBarActivity";
 
@@ -34,7 +34,7 @@ public class FadingActionBarActivity extends Activity {
     private boolean isAlphaLocked;
 
     public void setActionBarBackgroundDrawable(Drawable drawable) {
-        getActionBar().setBackgroundDrawable(drawable);
+        getSupportActionBar().setBackgroundDrawable(drawable);
         mDrawable = drawable;
 
         if (mAlpha == 255) {

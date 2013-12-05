@@ -17,7 +17,7 @@ android {
     buildToolsVersion "19.0.0"
 
     defaultConfig {
-        minSdkVersion 14
+        minSdkVersion 7
         targetSdkVersion 19
     }
     release {
@@ -28,4 +28,7 @@ android {
 }
 
 dependencies {
+    compile 'com.nineoldandroids:library:2.4.0'
+    compile 'com.android.support:support-v4:18.0.+'
+    compile 'com.android.support:appcompat-v7:18.0.+'
 }
