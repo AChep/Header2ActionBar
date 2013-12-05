@@ -17,8 +17,9 @@
 package com.achep.header2actionbar;
 
 import android.app.Activity;
-import android.app.Fragment;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +28,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
-import android.widget.Space;
+
+import com.nineoldandroids.animation.ObjectAnimator;
 
 /**
  * Little header fragment.
@@ -54,6 +56,10 @@ public class HeaderFragment extends Fragment {
         mOnHeaderScrollChangeListener = listener;
     }
 
+    private View getSpaceView(Activity activity) {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH ? SpaceViewBackCompatibility.getSpace(activity) : new LinearLayout(activity);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final Activity activity = getActivity();
@@ -65,7 +71,7 @@ public class HeaderFragment extends Fragment {
         onPrepareHeaderView(mHeader);
 
         // Perform fake header view.
-        final Space fakeHeader = new Space(activity);
+        final View fakeHeader = getSpaceView(activity);
         fakeHeader.setLayoutParams(new ListView.LayoutParams(
                 0, mHeaderHeight));
 
@@ -139,7 +145,8 @@ public class HeaderFragment extends Fragment {
             mCurrentHeaderHeight = height;
         }
         if (transY != mCurrentHeaderTranslateY) {
-            mHeader.setTranslationY(transY);
+            ObjectAnimator.ofInt(mHeader, "translationY", transY);
+//            mHeader.setTranslationY(transY);
             mCurrentHeaderTranslateY = transY;
 
             notifyOnHeaderScrollChangeListener( (float) -scrollTo / mHeaderHeight,
