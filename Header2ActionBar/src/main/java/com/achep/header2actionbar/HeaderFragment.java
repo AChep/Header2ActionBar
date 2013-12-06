@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ScrollView;
 
