@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Action bar background -->
+    <color name="actionbar_bg">#0099CC</color>
+
+</resources>
