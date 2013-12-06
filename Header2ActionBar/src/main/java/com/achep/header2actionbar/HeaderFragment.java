@@ -72,8 +72,6 @@ public class HeaderFragment extends Fragment {
 
         mHeader = inflater.inflate(getHeaderResource(), container, false);
         mHeaderHeight = mHeader.getLayoutParams().height;
-        mCurrentHeaderHeight = mHeaderHeight;
-        mCurrentHeaderTranslateY = 0;
         onPrepareHeaderView(mHeader);
 
         // Perform fake header view.
@@ -145,8 +143,15 @@ public class HeaderFragment extends Fragment {
                     ViewGroup.LayoutParams.MATCH_PARENT));
         }
 
-        // Initial notify
-        notifyOnHeaderScrollChangeListener(0, mHeaderHeight, 0);
+        // Initial scroll
+        mRoot.post(new Runnable() {
+            @Override
+            public void run() {
+                mCurrentHeaderHeight = Integer.MIN_VALUE;
+                mCurrentHeaderTranslateY = Integer.MIN_VALUE;
+                updateHeaderScroll(0);
+            }
+        });
 
         return mRoot;
     }
