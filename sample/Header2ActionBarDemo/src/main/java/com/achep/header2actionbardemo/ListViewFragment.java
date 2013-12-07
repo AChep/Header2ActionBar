@@ -18,8 +18,13 @@ package com.achep.header2actionbardemo;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import com.achep.header2actionbar.FadingActionBarActivity;
 import com.achep.header2actionbar.HeaderFragment;
@@ -33,8 +38,15 @@ public class ListViewFragment extends HeaderFragment {
 
     private ListView mListView;
     private String[] mListViewTitles;
+    private boolean mLoaded;
 
     private AsyncLoadSomething mAsyncLoadSomething;
+    private ProgressBar mProgressBar;
+
+    @Override
+    public boolean isHeaderHeightFloating() {
+        return true;
+    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -61,15 +73,6 @@ public class ListViewFragment extends HeaderFragment {
         super.onDetach();
     }
 
-    private void cancelAsyncTask(AsyncTask task) {
-        if (task != null) task.cancel(false);
-    }
-
-    @Override
-    public boolean isHeaderHeightFloating() {
-        return true;
-    }
-
     @Override
     public int getHeaderResource() {
         return R.layout.fragment_header;
@@ -77,7 +80,19 @@ public class ListViewFragment extends HeaderFragment {
 
     @Override
     public int getContentResource() {
-        return R.layout.fragment_list_view;
+        return R.layout.fragment_listview;
+    }
+
+    @Override
+    public View onCreateContentOverlayView() {
+        mProgressBar = new ProgressBar(getActivity());
+        if (mLoaded) mProgressBar.setVisibility(View.GONE);
+
+        final FrameLayout frameLayout = new FrameLayout(getActivity());
+        frameLayout.addView(mProgressBar, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+        return frameLayout;
     }
 
     @Override
@@ -85,16 +100,27 @@ public class ListViewFragment extends HeaderFragment {
         super.onPrepareContentListView(listView);
 
         mListView = listView;
-        if (mListViewTitles != null) setListViewTitles(mListViewTitles);
+        if (mLoaded) setListViewTitles(mListViewTitles);
     }
 
     private void setListViewTitles(String[] titles) {
+        mLoaded = true;
         mListViewTitles = titles;
         if (mListView == null) return;
+
+        mListView.setVisibility(View.VISIBLE);
         setListViewAdapter(mListView, new ArrayAdapter<String>(
                 getActivity(), android.R.layout.simple_list_item_1,
                 mListViewTitles));
     }
+
+    private void cancelAsyncTask(AsyncTask task) {
+        if (task != null) task.cancel(false);
+    }
+
+    // //////////////////////////////////////////
+    // ///////////// -- LOADER -- ///////////////
+    // //////////////////////////////////////////
 
     private static class AsyncLoadSomething extends AsyncTask<Void, Void, String[]> {
 
@@ -107,11 +133,20 @@ public class ListViewFragment extends HeaderFragment {
         }
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            final ListViewFragment audioFragment = weakFragment.get();
+            if (audioFragment.mListView != null) audioFragment.mListView.setVisibility(View.INVISIBLE);
+            if (audioFragment.mProgressBar != null) audioFragment.mProgressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
         protected String[] doInBackground(Void... voids) {
 
             try {
                 // Emulate long downloading
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -121,7 +156,7 @@ public class ListViewFragment extends HeaderFragment {
                     "Placeholder", "Placeholder", "Placeholder", "Placeholder",
                     "Placeholder", "Placeholder", "Placeholder", "Placeholder",
                     "Placeholder", "Placeholder", "Placeholder", "Placeholder",
-                    "Placeholder", "Placeholder", "Placeholder", "Placeholder", "Placeholder"};
+                    "Placeholder", "Placeholder", "Placeholder", "Placeholder"};
         }
 
         @Override
@@ -133,6 +168,7 @@ public class ListViewFragment extends HeaderFragment {
                 return;
             }
 
+            if (audioFragment.mProgressBar != null) audioFragment.mProgressBar.setVisibility(View.GONE);
             audioFragment.setListViewTitles(titles);
         }
     }

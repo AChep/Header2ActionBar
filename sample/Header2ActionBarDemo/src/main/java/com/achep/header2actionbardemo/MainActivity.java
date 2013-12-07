@@ -15,6 +15,8 @@
  */
 package com.achep.header2actionbardemo;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,6 +24,8 @@ import android.view.MenuItem;
 import com.achep.header2actionbar.FadingActionBarActivity;
 
 public class MainActivity extends FadingActionBarActivity {
+
+    private static final String LINK_TO_GITHUB = "https://github.com/AChep/Header2ActionBar";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +55,10 @@ public class MainActivity extends FadingActionBarActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_github) { // open repo at GitHub
+            Uri uri = Uri.parse(LINK_TO_GITHUB);
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);

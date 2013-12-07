@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="220dp">
@@ -7,45 +9,32 @@
         android:layout_width="match_parent"
         android:layout_height="220dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/header_bg"/>
+        android:src="@drawable/header_bg" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:layout_gravity="bottom|right"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="8dp">
+        android:layout_gravity="bottom|right|end"
+        android:layout_marginStart="@dimen/android_spaces_large"
+        android:layout_marginEnd="@dimen/android_spaces_large"
+        android:layout_marginLeft="@dimen/android_spaces_large"
+        android:layout_marginRight="@dimen/android_spaces_large"
+        android:layout_marginBottom="@dimen/android_spaces">
 
         <TextView
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:textAppearanceLarge"
-            android:textColor="#fff"
-            android:shadowColor="#8000"
-            android:shadowRadius="5"
-            android:shadowDx="2"
-            android:shadowDy="2"
-            android:textSize="32sp"
-            android:text="Test title text"
-            android:fontFamily="sans-serif-light"
-            android:background="?android:attr/activatedBackgroundIndicator"
-            android:clickable="true"/>
+            android:text="@string/header_title"
+            style="@style/Header.TitleText" />
 
         <TextView
             android:id="@+id/subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#fff"
-            android:shadowColor="#8000"
-            android:text="Test subtitle text"
-            android:shadowRadius="5"
-            android:shadowDx="2"
-            android:shadowDy="2"
-            android:textSize="16sp"
-            android:textAppearance="?android:textAppearanceSmall"
-            android:fontFamily="sans-serif-condensed" />
+            android:text="@string/header_subtitle"
+            style="@style/Header.SubTitleText"/>
 
     </LinearLayout>
 

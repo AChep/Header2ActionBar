@@ -1,9 +1,29 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
         <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <!--  ************************
+          ||||||||||||||||||||||||
+                   HEADER
+          ||||||||||||||||||||||||
+          ************************  -->
+    <style name="Header.TitleText" parent="android:TextAppearance.Holo">
+        <item name="android:fontFamily" tools:ignore="NewApi">sans-serif-light</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">32sp</item>
+        <item name="android:shadowColor">#8000</item>
+        <item name="android:shadowRadius">5</item>
+        <item name="android:shadowDx">2</item>
+        <item name="android:shadowDy">2</item>
+    </style>
+
+    <style name="Header.SubTitleText" parent="Header.TitleText">
+        <item name="android:fontFamily" tools:ignore="NewApi">sans-serif-condensed</item>
+        <item name="android:textSize">16sp</item>
     </style>
 
 </resources>

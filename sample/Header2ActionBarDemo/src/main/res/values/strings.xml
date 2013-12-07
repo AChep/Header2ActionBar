@@ -4,5 +4,8 @@
     <string name="app_name">Header2ActionBarDemo</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="action_github">GitHub</string>
+    <string name="header_title">Test title text</string>
+    <string name="header_subtitle">Test subtitle text</string>
 
 </resources>
