@@ -51,6 +51,7 @@ public class HeaderFragment extends Fragment {
     private Space mFakeHeader;
     private boolean mListViewEmpty;
 
+    private AbsListView.OnScrollListener mOnScrollListener;
     private OnHeaderScrollChangeListener mOnHeaderScrollChangeListener;
 
     public interface OnHeaderScrollChangeListener {
@@ -85,10 +86,15 @@ public class HeaderFragment extends Fragment {
             listView.setOnScrollListener(new AbsListView.OnScrollListener() {
 
                 @Override
-                public void onScrollStateChanged(AbsListView absListView, int i) { /* unused */ }
+                public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+                    if (mOnScrollListener != null) {
+                        mOnScrollListener.onScrollStateChanged(absListView, scrollState);
+                    }
+                }
 
                 @Override
-                public void onScroll(AbsListView absListView, int i, int i2, int i3) {
+                public void onScroll(AbsListView absListView, int firstVisibleItem,
+                                     int visibleItemCount, int totalItemCount) {
                     if (mListViewEmpty) { // poor poor listview :(
                         updateHeaderScroll(0);
                     } else {
@@ -98,6 +104,11 @@ public class HeaderFragment extends Fragment {
                         } else {
                             updateHeaderScroll(-mHeaderHeight);
                         }
+                    }
+
+                    if (mOnScrollListener != null) {
+                        mOnScrollListener.onScroll(absListView, firstVisibleItem,
+                                visibleItemCount, totalItemCount);
                     }
                 }
             });
@@ -242,6 +253,10 @@ public class HeaderFragment extends Fragment {
         listView.removeHeaderView(mFakeHeader);
         listView.addHeaderView(mFakeHeader);
         listView.setAdapter(adapter);
+    }
+
+    public void setListViewOnScrollListener(AbsListView.OnScrollListener listener) {
+        mOnScrollListener = listener;
     }
 
     /**
