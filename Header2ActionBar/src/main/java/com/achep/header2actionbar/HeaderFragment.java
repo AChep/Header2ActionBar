@@ -258,6 +258,7 @@ public class HeaderFragment extends Fragment {
 
     public void setListViewAdapter(ListView listView, ListAdapter adapter) {
         mListViewEmpty = adapter == null;
+        listView.setAdapter(null);
         listView.removeHeaderView(mFakeHeader);
         listView.addHeaderView(mFakeHeader);
         listView.setAdapter(adapter);
