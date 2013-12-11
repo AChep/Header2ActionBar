@@ -15,23 +15,28 @@
  */
 package com.achep.header2actionbardemo;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.achep.header2actionbar.FadingActionBarActivity;
+import com.achep.header2actionbar.FadingActionBarHelper;
 
-public class MainActivity extends FadingActionBarActivity {
+public class MainActivity extends Activity {
 
     private static final String LINK_TO_GITHUB = "https://github.com/AChep/Header2ActionBar";
+
+    private FadingActionBarHelper mFadingActionBarHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setActionBarBackgroundDrawable(getResources().getDrawable(R.drawable.actionbar_bg));
+
+        mFadingActionBarHelper = new FadingActionBarHelper(getActionBar(),
+                getResources().getDrawable(R.drawable.actionbar_bg));
 
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
@@ -62,6 +67,10 @@ public class MainActivity extends FadingActionBarActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public FadingActionBarHelper getFadingActionBarHelper() {
+        return mFadingActionBarHelper;
     }
 
 }

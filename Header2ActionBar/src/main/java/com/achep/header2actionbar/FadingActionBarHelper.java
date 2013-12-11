@@ -13,28 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.achep.header2actionbar;
 
-import android.app.Activity;
+import android.app.ActionBar;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.Log;
 
 /**
- * Created by AChep@xda <artemchep@gmail.com>
+ * Created by Artem on 11.12.13.
  */
-public class FadingActionBarActivity extends Activity {
+public class FadingActionBarHelper {
 
-    private static final String TAG = "FadingActionBarActivity";
+    private static final String TAG = "FadingActionBarHelper";
 
     private int mAlpha = 255;
     private Drawable mDrawable;
-
     private boolean isAlphaLocked;
 
+    private final ActionBar mActionBar;
+
+    public FadingActionBarHelper(final ActionBar actionBar) {
+        mActionBar = actionBar;
+    }
+
+    public FadingActionBarHelper(final ActionBar actionBar, final Drawable drawable) {
+        mActionBar = actionBar;
+        setActionBarBackgroundDrawable(drawable);
+    }
+
     public void setActionBarBackgroundDrawable(Drawable drawable) {
-        getActionBar().setBackgroundDrawable(drawable);
+        mActionBar.setBackgroundDrawable(drawable);
         mDrawable = drawable;
 
         if (mAlpha == 255) {
@@ -80,5 +89,4 @@ public class FadingActionBarActivity extends Activity {
     public void setActionBarAlphaLocked(boolean isLocked) {
         isAlphaLocked = isLocked;
     }
-
 }

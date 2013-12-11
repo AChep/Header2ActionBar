@@ -26,7 +26,6 @@ import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
-import com.achep.header2actionbar.FadingActionBarActivity;
 import com.achep.header2actionbar.HeaderFragment;
 
 import java.lang.ref.WeakReference;
@@ -56,9 +55,13 @@ public class ListViewFragment extends HeaderFragment {
             @Override
             public void onHeaderScrollChanged(float progress, int height, int scroll) {
                 height -= getActivity().getActionBar().getHeight();
+
                 progress = (float) scroll / height;
                 if (progress > 1f) progress = 1f;
-                ((FadingActionBarActivity) getActivity()).setActionBarAlpha((int) (255 * progress));
+
+                ((MainActivity) getActivity())
+                        .getFadingActionBarHelper()
+                        .setActionBarAlpha((int) (255 * progress));
             }
         });
 
