@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.achep.header2actionbar;
 
 import android.app.ActionBar;
@@ -21,7 +22,7 @@ import android.os.Build;
 import android.util.Log;
 
 /**
- * Created by Artem on 11.12.13.
+ * Created by AChep@xda <artemchep@gmail.com>
  */
 public class FadingActionBarHelper {
 
