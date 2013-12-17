@@ -44,12 +44,16 @@ public class FadingActionBarHelper {
     }
 
     public void setActionBarBackgroundDrawable(Drawable drawable) {
-        mActionBar.setBackgroundDrawable(drawable);
-        mDrawable = drawable;
+        setActionBarBackgroundDrawable(drawable, true);
+    }
+
+    public void setActionBarBackgroundDrawable(Drawable drawable, boolean mutate) {
+        mDrawable = mutate ? drawable.mutate() : drawable;
+        mActionBar.setBackgroundDrawable(mDrawable);
 
         if (mAlpha == 255) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-                mAlpha = drawable.getAlpha();
+                mAlpha = mDrawable.getAlpha();
         } else {
             setActionBarAlpha(mAlpha);
         }
