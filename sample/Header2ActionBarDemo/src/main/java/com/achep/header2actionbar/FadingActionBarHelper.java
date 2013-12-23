@@ -94,4 +94,8 @@ public class FadingActionBarHelper {
     public void setActionBarAlphaLocked(boolean isLocked) {
         isAlphaLocked = isLocked;
     }
+
+    public boolean getActionBarAlphaLocked() {
+        return isAlphaLocked;
+    }
 }
