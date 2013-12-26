@@ -71,7 +71,9 @@ public class FadingActionBarHelper {
 
     /**
      * Please use this method for global changes only!
-     * Otherwise, please, use {@link android.graphics.drawable.Drawable#setAlpha(int)}
+     * This is helpful when you need to provide something like
+     * Navigation drawer: lock ActionBar and set
+     * {@link android.graphics.drawable.Drawable#setAlpha(int)}
      * to {@link #getActionBarBackgroundDrawable()} directly.
      *
      * @param alpha a value from 0 to 255
@@ -80,7 +82,7 @@ public class FadingActionBarHelper {
      */
     public void setActionBarAlpha(int alpha) {
         if (mDrawable == null) {
-            Log.w(TAG, "Set action bar background before setting alpha!");
+            Log.w(TAG, "Set action bar background before setting the alpha level!");
             return;
         }
         if (!isAlphaLocked) mDrawable.setAlpha(alpha);
@@ -91,11 +93,21 @@ public class FadingActionBarHelper {
         return mAlpha;
     }
 
-    public void setActionBarAlphaLocked(boolean isLocked) {
-        isAlphaLocked = isLocked;
+    /**
+     * When ActionBar's alpha is locked {@link #setActionBarAlpha(int)}
+     * won't change drawable\'s alpha (but will change {@link #getActionBarAlpha()} level)
+     *
+     * @param lock
+     */
+    public void setActionBarAlphaLocked(boolean lock) {
+
+        // Update alpha level on unlock
+        if (isAlphaLocked != (isAlphaLocked = lock) && !isAlphaLocked) {
+            setActionBarAlpha(mAlpha);
+        }
     }
 
-    public boolean getActionBarAlphaLocked() {
+    public boolean isActionBarAlphaLocked() {
         return isAlphaLocked;
     }
 }

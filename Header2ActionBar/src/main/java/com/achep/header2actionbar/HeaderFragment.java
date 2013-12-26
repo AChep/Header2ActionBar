@@ -36,53 +36,57 @@ import android.widget.Space;
  * Created by AChep@xda <artemchep@gmail.com>
  * </p>
  */
-public class HeaderFragment extends Fragment {
+public abstract class HeaderFragment extends Fragment {
 
     private static final String TAG = "HeaderFragment";
 
-    private FrameLayout mRoot;
+    private FrameLayout mFrameLayout;
     private View mContentOverlay;
 
+    // header
     private View mHeader;
+    private View mHeaderHeader;
+    private View mHeaderBackground;
     private int mHeaderHeight;
-    private int mCurrentHeaderHeight;
-    private int mCurrentHeaderTranslateY;
+    private int mHeaderScroll;
 
     private Space mFakeHeader;
-    private boolean mListViewEmpty;
+    private boolean isListViewEmpty;
 
+    // listeners
     private AbsListView.OnScrollListener mOnScrollListener;
-    private OnHeaderScrollChangeListener mOnHeaderScrollChangeListener;
+    private OnHeaderScrollChangedListener mOnHeaderScrollChangedListener;
 
-    public interface OnHeaderScrollChangeListener {
+    public interface OnHeaderScrollChangedListener {
         public void onHeaderScrollChanged(float progress, int height, int scroll);
     }
 
-    public void setOnHeaderScrollChangeListener(OnHeaderScrollChangeListener listener) {
-        mOnHeaderScrollChangeListener = listener;
+    public void setOnHeaderScrollChangedListener(OnHeaderScrollChangedListener listener) {
+        mOnHeaderScrollChangedListener = listener;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final Activity activity = getActivity();
+        assert activity != null;
+        mFrameLayout = new FrameLayout(activity);
 
-        mHeader = inflater.inflate(getHeaderResource(), container, false);
+        mHeader = onCreateHeaderView(inflater, mFrameLayout);
+        mHeaderHeader = mHeader.findViewById(R.id.header);
+        mHeaderBackground = mHeader.findViewById(R.id.background);
+        assert mHeader.getLayoutParams() != null;
         mHeaderHeight = mHeader.getLayoutParams().height;
-        onPrepareHeaderView(mHeader);
 
-        // Perform fake header view.
         mFakeHeader = new Space(activity);
-        mFakeHeader.setLayoutParams(new ListView.LayoutParams(
-                0, mHeaderHeight));
+        mFakeHeader.setLayoutParams(
+                new ListView.LayoutParams(0, mHeaderHeight));
 
-        View content = inflater.inflate(getContentResource(), container, false);
-        assert content != null;
+        View content = onCreateContentView(inflater, mFrameLayout);
         if (content instanceof ListView) {
-            final ListView listView = (ListView) content;
+            isListViewEmpty = true;
 
-            mListViewEmpty = true;
+            final ListView listView = (ListView) content;
             listView.addHeaderView(mFakeHeader);
-            onPrepareContentListView(listView);
             listView.setOnScrollListener(new AbsListView.OnScrollListener() {
 
                 @Override
@@ -95,180 +99,130 @@ public class HeaderFragment extends Fragment {
                 @Override
                 public void onScroll(AbsListView absListView, int firstVisibleItem,
                                      int visibleItemCount, int totalItemCount) {
-                    if (mListViewEmpty) { // poor poor listview :(
-                        updateHeaderScroll(0);
+                    if (isListViewEmpty) {
+                        scrollHeaderTo(0);
                     } else {
                         final View child = absListView.getChildAt(0);
-                        if (child == mFakeHeader) {
-                            updateHeaderScroll(child.getTop());
-                        } else {
-                            updateHeaderScroll(-mHeaderHeight);
-                        }
-                    }
-
-                    if (mOnScrollListener != null) {
-                        mOnScrollListener.onScroll(absListView, firstVisibleItem,
-                                visibleItemCount, totalItemCount);
+                        assert child != null;
+                        scrollHeaderTo(child == mFakeHeader ? child.getTop() : -mHeaderHeight);
                     }
                 }
             });
         } else {
-            onPrepareContentView(content);
 
-            // Merge fake header view and content view
-            final LinearLayout ll = new LinearLayout(activity);
-            ll.setLayoutParams(new ViewGroup.LayoutParams(
+            // Merge fake header view and content view.
+            final LinearLayout view = new LinearLayout(activity);
+            view.setLayoutParams(new ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
-            ll.setOrientation(LinearLayout.VERTICAL);
-            ll.addView(mFakeHeader);
-            ll.addView(content);
+            view.setOrientation(LinearLayout.VERTICAL);
+            view.addView(mFakeHeader);
+            view.addView(content);
 
+            // Put merged content to ScrollView
             final NotifyingScrollView scrollView = new NotifyingScrollView(activity);
-            scrollView.addView(ll);
+            scrollView.addView(view);
             scrollView.setOnScrollChangedListener(new NotifyingScrollView.OnScrollChangedListener() {
                 @Override
                 public void onScrollChanged(ScrollView who, int l, int t, int oldl, int oldt) {
-                    updateHeaderScroll(-t);
+                    scrollHeaderTo(-t);
                 }
             });
             content = scrollView;
         }
 
-        mRoot = new FrameLayout(activity);
-        mRoot.addView(content, new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-        mRoot.addView(mHeader);
+        mFrameLayout.addView(content);
+        mFrameLayout.addView(mHeader);
 
-        // Overlay view always shows at the top of content.
-        mContentOverlay = onCreateContentOverlayView();
-        if (mContentOverlay != null) {
-            mRoot.addView(mContentOverlay, new FrameLayout.LayoutParams(
+        // Content overlay view always shows at the top of content.
+        if ((mContentOverlay = onCreateContentOverlayView(inflater, mFrameLayout)) != null) {
+            mFrameLayout.addView(mContentOverlay, new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
         }
 
-        // Initial scroll
-        mRoot.post(new Runnable() {
+        // Post initial scroll
+        mFrameLayout.post(new Runnable() {
             @Override
             public void run() {
-                mCurrentHeaderHeight = Integer.MIN_VALUE;
-                mCurrentHeaderTranslateY = Integer.MIN_VALUE;
-                updateHeaderScroll(0);
+                scrollHeaderTo(0, true);
             }
         });
 
-        return mRoot;
+        return mFrameLayout;
     }
 
-    private void updateHeaderScroll(int scrollTo) {
-        scrollTo = scrollTo > 0 ? 0 : scrollTo < -mHeaderHeight ? -mHeaderHeight : scrollTo;
+    private void scrollHeaderTo(int scrollTo) {
+        scrollHeaderTo(scrollTo, false);
+    }
 
-        final boolean allowChangeHeight = isHeaderHeightFloating();
-        final int height = mHeaderHeight + scrollTo / 2;
-        final int transY = allowChangeHeight ? scrollTo / 2 : scrollTo;
+    private void scrollHeaderTo(int scrollTo, boolean forceChange) {
+        scrollTo = Math.min(Math.max(scrollTo, -mHeaderHeight), 0);
+        if (mHeaderScroll == (mHeaderScroll = scrollTo) & !forceChange) return;
 
-        if (height != mCurrentHeaderHeight && allowChangeHeight) {
-            final ViewGroup.LayoutParams lp = mHeader.getLayoutParams();
-            lp.height = height;
-            mHeader.setLayoutParams(lp);
-            mCurrentHeaderHeight = height;
+        setViewTranslationY(mHeader, scrollTo);
+        setViewTranslationY(mHeaderHeader, -scrollTo);
+        setViewTranslationY(mHeaderBackground, -scrollTo / 1.6f);
+
+        if (mContentOverlay != null) {
+            final ViewGroup.LayoutParams lp = mContentOverlay.getLayoutParams();
+            final int delta = mHeaderHeight + scrollTo;
+            lp.height = mFrameLayout.getHeight() - delta;
+            mContentOverlay.setLayoutParams(lp);
+            mContentOverlay.setTranslationY(delta);
         }
-        if (transY != mCurrentHeaderTranslateY) {
-            mHeader.setTranslationY(transY);
-            mCurrentHeaderTranslateY = transY;
 
-            if (mContentOverlay != null) {
-                final ViewGroup.LayoutParams lp = mContentOverlay.getLayoutParams();
-                final int delta = mHeaderHeight + scrollTo;
-                lp.height = mRoot.getHeight() - delta;
-                mContentOverlay.setLayoutParams(lp);
-                mContentOverlay.setTranslationY(delta);
-            }
+        notifyOnHeaderScrollChangeListener(
+                (float) -scrollTo / mHeaderHeight,
+                mHeaderHeight,
+                -scrollTo);
+    }
 
-            notifyOnHeaderScrollChangeListener((float) -scrollTo / mHeaderHeight,
-                    mHeaderHeight, -scrollTo);
-        }
+    private void setViewTranslationY(View view, float translationY) {
+        if (view != null) view.setTranslationY(translationY);
     }
 
     private void notifyOnHeaderScrollChangeListener(float progress, int height, int scroll) {
-        if (mOnHeaderScrollChangeListener != null) {
-            // Notify upper fragment to update ActionBar's alpha or whatever.
-            mOnHeaderScrollChangeListener.onHeaderScrollChanged(progress, height, scroll);
+        if (mOnHeaderScrollChangedListener != null) {
+            mOnHeaderScrollChangedListener.onHeaderScrollChanged(progress, height, scroll);
         }
     }
 
-    /**
-     * If true, header's height might be changed on scroll.
-     * <p>Note: It takes a lot of calculations to measure the header all the time.</p>
-     */
-    public boolean isHeaderHeightFloating() {
-        return false;
-    }
+    public abstract View onCreateHeaderView(LayoutInflater inflater, ViewGroup container);
 
-    /**
-     * Int reference to header's resource.
-     *
-     * @see #onPrepareHeaderView(android.view.View)
-     * @see #getContentResource()
-     */
-    public int getHeaderResource() {
-        return 0;
-    }
+    public abstract View onCreateContentView(LayoutInflater inflater, ViewGroup container);
 
-    /**
-     * This is the place for setting up the header.
-     *
-     * @param view inflated header view.
-     * @see #getHeaderResource()
-     */
-    public void onPrepareHeaderView(View view) { /* for my child */ }
-
-    /**
-     * Int reference to content's resource.
-     * <p>
-     * <b>Attention</b>: Parent view must be {@link android.widget.ListView ListView}
-     * or something else which will work inside of {@link android.widget.ScrollView ScrollView}.
-     * Otherwise it <b>WON'T</b> work.
-     * </p>
-     *
-     * @see #getHeaderResource()
-     * @see #onPrepareContentListView(ListView)
-     */
-    public int getContentResource() {
-        return 0;
-    }
-
-    /**
-     * Called if the content's parent is a {@link android.widget.ListView ListView}.
-     *
-     * @see #getContentResource()
-     * @see #setListViewAdapter(android.widget.ListView, android.widget.ListAdapter)
-     */
-    public void onPrepareContentListView(ListView listView) { /* for my child */ }
+    public abstract View onCreateContentOverlayView(LayoutInflater inflater, ViewGroup container);
 
     public void setListViewAdapter(ListView listView, ListAdapter adapter) {
-        mListViewEmpty = adapter == null;
+        isListViewEmpty = adapter == null;
         listView.setAdapter(null);
         listView.removeHeaderView(mFakeHeader);
         listView.addHeaderView(mFakeHeader);
         listView.setAdapter(adapter);
     }
 
-    public void setListViewOnScrollListener(AbsListView.OnScrollListener listener) {
+    /**
+     * {@inheritDoc AbsListView#setOnScrollChangedListener}
+     */
+    public void setListViewOnScrollChangedListener(AbsListView.OnScrollListener listener) {
         mOnScrollListener = listener;
     }
 
-    /**
-     * Called if the content's parent is NOT a {@link android.widget.ListView ListView}.
-     *
-     * @see #getContentResource()
-     */
-    public void onPrepareContentView(View view) { /* for my child */ }
+    // //////////////////////////////////////////
+    // //////////// -- GETTERS -- ///////////////
+    // //////////////////////////////////////////
 
-    public View onCreateContentOverlayView() {
-        return null;
+    public View getHeaderView() {
+        return mHeader;
+    }
+
+    public View getHeaderHeaderView() {
+        return mHeaderHeader;
+    }
+
+    public View getHeaderBackgroundView() {
+        return mHeaderBackground;
     }
 
 }
