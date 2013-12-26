@@ -29,3 +29,16 @@ android {
 
 dependencies {
 }
+
+task clearJar(type: Delete) {
+    delete 'build/libs/Header2ActionBar.jar'
+}
+
+task makeJar(type: Copy) {
+    from('build/bundles/release/')
+    into('build/libs/')
+    include('classes.jar')
+    rename ('classes.jar', 'Header2ActionBar.jar')
+}
+
+makeJar.dependsOn(clearJar, build)
