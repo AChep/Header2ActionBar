@@ -33,12 +33,20 @@ import android.widget.Space;
 /**
  * Little header fragment.
  * <p>
+ * <b>Important</b>: Use {@link android.R.id#background} to specify background view and
+ * {@link android.R.id#title} to specify view on top of the header
+ * (for example: a shadow for {@code ActionBar}).
+ * <p>
  * Created by AChep@xda <artemchep@gmail.com>
  * </p>
  */
 public abstract class HeaderFragment extends Fragment {
 
     private static final String TAG = "HeaderFragment";
+
+    public static final int HEADER_BACKGROUND_SCROLL_NORMAL = 0;
+    public static final int HEADER_BACKGROUND_SCROLL_PARALLAX = 1;
+    public static final int HEADER_BACKGROUND_SCROLL_STATIC = 2;
 
     private FrameLayout mFrameLayout;
     private View mContentOverlay;
@@ -49,6 +57,8 @@ public abstract class HeaderFragment extends Fragment {
     private View mHeaderBackground;
     private int mHeaderHeight;
     private int mHeaderScroll;
+
+    private int mHeaderBackgroundScrollMode = HEADER_BACKGROUND_SCROLL_NORMAL;
 
     private Space mFakeHeader;
     private boolean isListViewEmpty;
@@ -65,6 +75,10 @@ public abstract class HeaderFragment extends Fragment {
         mOnHeaderScrollChangedListener = listener;
     }
 
+    public void setHeaderBackgroundScrollMode(int scrollMode) {
+        mHeaderBackgroundScrollMode = scrollMode;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final Activity activity = getActivity();
@@ -72,8 +86,8 @@ public abstract class HeaderFragment extends Fragment {
         mFrameLayout = new FrameLayout(activity);
 
         mHeader = onCreateHeaderView(inflater, mFrameLayout);
-        mHeaderHeader = mHeader.findViewById(R.id.header);
-        mHeaderBackground = mHeader.findViewById(R.id.background);
+        mHeaderHeader = mHeader.findViewById(android.R.id.title);
+        mHeaderBackground = mHeader.findViewById(android.R.id.background);
         assert mHeader.getLayoutParams() != null;
         mHeaderHeight = mHeader.getLayoutParams().height;
 
@@ -162,7 +176,18 @@ public abstract class HeaderFragment extends Fragment {
 
         setViewTranslationY(mHeader, scrollTo);
         setViewTranslationY(mHeaderHeader, -scrollTo);
-        setViewTranslationY(mHeaderBackground, -scrollTo / 1.6f);
+
+        switch (mHeaderBackgroundScrollMode) {
+            case HEADER_BACKGROUND_SCROLL_NORMAL:
+                setViewTranslationY(mHeaderBackground, 0);
+                break;
+            case HEADER_BACKGROUND_SCROLL_PARALLAX:
+                setViewTranslationY(mHeaderBackground, -scrollTo / 1.6f);
+                break;
+            case HEADER_BACKGROUND_SCROLL_STATIC:
+                setViewTranslationY(mHeaderBackground, -scrollTo);
+                break;
+        }
 
         if (mContentOverlay != null) {
             final ViewGroup.LayoutParams lp = mContentOverlay.getLayoutParams();
@@ -223,6 +248,10 @@ public abstract class HeaderFragment extends Fragment {
 
     public View getHeaderBackgroundView() {
         return mHeaderBackground;
+    }
+
+    public int getHeaderBackgroundScrollMode() {
+        return mHeaderBackgroundScrollMode;
     }
 
 }

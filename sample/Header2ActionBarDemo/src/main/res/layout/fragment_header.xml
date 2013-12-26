@@ -5,7 +5,7 @@
     android:layout_height="220dp">
 
     <ImageView
-        android:id="@+id/picture"
+        android:id="@android:id/background"
         android:layout_width="match_parent"
         android:layout_height="220dp"
         android:scaleType="centerCrop"
@@ -34,8 +34,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/header_subtitle"
-            style="@style/Header.SubTitleText"/>
+            style="@style/Header.SubTitleText" />
 
     </LinearLayout>
+
+    <View
+        android:id="@android:id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="?android:actionBarSize"
+        android:background="@drawable/header_ab_shadow" />
+
 
 </FrameLayout>

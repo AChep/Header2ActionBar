@@ -16,9 +16,11 @@
 package com.achep.header2actionbardemo;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -40,24 +42,28 @@ public class ListViewFragment extends HeaderFragment {
     private boolean mLoaded;
 
     private AsyncLoadSomething mAsyncLoadSomething;
-    private ProgressBar mProgressBar;
-
-    @Override
-    public boolean isHeaderHeightFloating() {
-        return true;
-    }
+    private FrameLayout mContentOverlay;
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        setOnHeaderScrollChangeListener(new OnHeaderScrollChangeListener() {
+        setHeaderBackgroundScrollMode(HEADER_BACKGROUND_SCROLL_PARALLAX);
+        setOnHeaderScrollChangedListener(new OnHeaderScrollChangedListener() {
             @Override
             public void onHeaderScrollChanged(float progress, int height, int scroll) {
                 height -= getActivity().getActionBar().getHeight();
 
                 progress = (float) scroll / height;
                 if (progress > 1f) progress = 1f;
+
+                // *
+                // `*
+                // ```*
+                // ``````*
+                // ````````*
+                // `````````*
+                progress = (1 - (float) Math.cos(progress * Math.PI)) * 0.5f;
 
                 ((MainActivity) getActivity())
                         .getFadingActionBarHelper()
@@ -77,33 +83,26 @@ public class ListViewFragment extends HeaderFragment {
     }
 
     @Override
-    public int getHeaderResource() {
-        return R.layout.fragment_header;
+    public View onCreateHeaderView(LayoutInflater inflater, ViewGroup container) {
+        return inflater.inflate(R.layout.fragment_header, container, false);
     }
 
     @Override
-    public int getContentResource() {
-        return R.layout.fragment_listview;
+    public View onCreateContentView(LayoutInflater inflater, ViewGroup container) {
+        mListView = (ListView) inflater.inflate(R.layout.fragment_listview, container, false);
+        if (mLoaded) setListViewTitles(mListViewTitles);
+        return mListView;
     }
 
     @Override
-    public View onCreateContentOverlayView() {
-        mProgressBar = new ProgressBar(getActivity());
-        if (mLoaded) mProgressBar.setVisibility(View.GONE);
-
-        final FrameLayout frameLayout = new FrameLayout(getActivity());
-        frameLayout.addView(mProgressBar, new FrameLayout.LayoutParams(
+    public View onCreateContentOverlayView(LayoutInflater inflater, ViewGroup container) {
+        ProgressBar progressBar = new ProgressBar(getActivity());
+        mContentOverlay = new FrameLayout(getActivity());
+        mContentOverlay.addView(progressBar, new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
-        return frameLayout;
-    }
-
-    @Override
-    public void onPrepareContentListView(ListView listView) {
-        super.onPrepareContentListView(listView);
-
-        mListView = listView;
-        if (mLoaded) setListViewTitles(mListViewTitles);
+        if (mLoaded) mContentOverlay.setVisibility(View.GONE);
+        return mContentOverlay;
     }
 
     private void setListViewTitles(String[] titles) {
@@ -141,7 +140,7 @@ public class ListViewFragment extends HeaderFragment {
 
             final ListViewFragment audioFragment = weakFragment.get();
             if (audioFragment.mListView != null) audioFragment.mListView.setVisibility(View.INVISIBLE);
-            if (audioFragment.mProgressBar != null) audioFragment.mProgressBar.setVisibility(View.VISIBLE);
+            if (audioFragment.mContentOverlay != null) audioFragment.mContentOverlay.setVisibility(View.VISIBLE);
         }
 
         @Override
@@ -171,7 +170,7 @@ public class ListViewFragment extends HeaderFragment {
                 return;
             }
 
-            if (audioFragment.mProgressBar != null) audioFragment.mProgressBar.setVisibility(View.GONE);
+            if (audioFragment.mContentOverlay != null) audioFragment.mContentOverlay.setVisibility(View.GONE);
             audioFragment.setListViewTitles(titles);
         }
     }

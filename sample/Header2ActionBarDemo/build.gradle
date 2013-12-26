@@ -14,7 +14,7 @@ repositories {
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.0"
+    buildToolsVersion '19.0.0'
 
     defaultConfig {
         minSdkVersion 14
@@ -34,4 +34,5 @@ android {
 }
 
 dependencies {
+    compile files('src/main/libs/Header2ActionBar-0.2.1.jar')
 }
