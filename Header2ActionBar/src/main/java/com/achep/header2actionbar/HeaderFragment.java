@@ -38,8 +38,15 @@ import android.widget.Space;
  * (for example: a shadow for {@code ActionBar}).
  * <p>
  * Created by AChep@xda <artemchep@gmail.com>
- * </p>
  */
+//  let's        \'/
+//  remember   -= * =-
+//  happy        {.}
+//  2013        {.-'}
+//  year!      {`_.-'}
+//  It was    {-` _.-'}
+//  amazing!   `":=:"`
+//              `---`
 public abstract class HeaderFragment extends Fragment {
 
     private static final String TAG = "HeaderFragment";
