@@ -120,6 +120,12 @@ public abstract class HeaderFragment extends Fragment {
                 @Override
                 public void onScroll(AbsListView absListView, int firstVisibleItem,
                                      int visibleItemCount, int totalItemCount) {
+                    if (mOnScrollListener != null) {
+                        mOnScrollListener.onScroll(
+                                absListView, firstVisibleItem, 
+                                visibleItemCount, totalItemCount);
+                    }
+                    
                     if (isListViewEmpty) {
                         scrollHeaderTo(0);
                     } else {
